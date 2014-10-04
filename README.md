@@ -13,7 +13,7 @@ Development
 Please note that all the following tests were done in a local controlled environment for educational purposes only. Do NOT do this at home!
 - Initially, we tested the vulnerability on our environments with the following command (see the link above for the source): 
  
- `env x='() { :;}; echo vulnerable' bash -c "echo this is a test`
+ `env x='() { :;}; echo vulnerable' bash -c "echo this is a test"`
 
 - Next, we set up an http server on a CentOS machine with Apache and php-cgi running a very simple script (see index.php).
 
